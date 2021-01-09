@@ -2,15 +2,18 @@ from riotwatcher import LolWatcher, ApiError
 import pandas as pd
 import psutil
 
+# TODO check date played of matches
+# TODO handle cases where there are not ranked matches
+# TODO loop and periodically check matches in the background
+
 # golbal variables
-api_key = 'RGAPI-8d7d1efb-dc2d-4973-b623-8ca322045112'
+api_key = 'KEY'
 watcher = LolWatcher(api_key)
 my_region = 'na1'
 
 # summoner details
 me = watcher.summoner.by_name(my_region, 'Fio')
 #print(me)
-
 
 print("\n---Ranked---\n")
 
