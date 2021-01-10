@@ -38,6 +38,15 @@ while(True):
     timeDiff = int(last_match['timestamp']) - int(second_last_match['timestamp'])
     diffMins = timeDiff/1000/60
 
+    # check if the last game played was more than 2 hours ago
+    currTime = time.time()
+    timeLastPlayed = (currTime - (int(last_match['timestamp'])/1000))/60
+
+    if(timeLastPlayed > 120):
+        print("The last game played was more than 2 hours ago")
+        time.sleep(5)
+        continue
+
     # check if both the matches were ranked and were started within 2 hours of each other
     if(last_match['queue'] == 420 and second_last_match['queue'] == 420 and diffMins < 120):
         losses = 0
