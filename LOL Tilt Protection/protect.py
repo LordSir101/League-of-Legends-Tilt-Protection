@@ -3,16 +3,26 @@ import psutil
 import time
 
 timeInterval = 10
+timeBetweenGamesParam = 120
+timeSinceLastGameParam = 120
+
 name = input("Please enter your LOL username\n")
+validated = False
 
 
 # golbal variables
-api_key = 'key'
+api_key = 'RGAPI-a1f6cfd6-fc02-4a2a-ad66-4018767e338f'
 watcher = LolWatcher(api_key)
 my_region = 'na1'
 
-# summoner details
-me = watcher.summoner.by_name(my_region, name)
+while(not validated):
+    try:
+        # summoner details
+        me = watcher.summoner.by_name(my_region, name)
+        validated = True
+    except:
+        name = input("Invalid username please try again")
+
 #print(me)
 
 print("\n---Ranked---\n")
@@ -23,24 +33,31 @@ print(ranked_stats)
 while(True):
     print("\n---Matches---\n")
 
-    # get details of most recent matches
-    try:
-        matches = watcher.match.matchlist_by_account(my_region, me['accountId'])
-    except:
-        time.sleep(5)
-        continue
+    # useing a loop in case we hit a query limit
+    # we will pause the program for 2 secs and try again
+    while(True):
+        try:
+            # get details of most recent matches
+            matches = watcher.match.matchlist_by_account(my_region, me['accountId'])
+            break
+        except:
+            time.sleep(2)
+
     # last two matches played
     last_match = matches['matches'][0]
     second_last_match = matches['matches'][1]
 
-    # get champion details of each match
-    # this will get data for all players
-    try:
-        match_detail = watcher.match.by_id(my_region, last_match['gameId'])
-        match_detail2 = watcher.match.by_id(my_region, second_last_match['gameId'])
-    except:
-        time.sleep(5)
-        continue
+
+    while(True):
+        try:
+            # get champion details of each match
+            # this will get data for all players
+            match_detail = watcher.match.by_id(my_region, last_match['gameId'])
+            match_detail2 = watcher.match.by_id(my_region, second_last_match['gameId'])
+            break
+        except:
+            time.sleep(2)
+
     # Find the difference between games in mins
     # Riot API has timestamps in milli
     timeDiff = int(last_match['timestamp']) - int(second_last_match['timestamp'])
@@ -50,13 +67,13 @@ while(True):
     currTime = time.time()
     timeLastPlayed = (currTime - (int(last_match['timestamp'])/1000))/60
 
-    if(timeLastPlayed > 120):
+    if(timeLastPlayed > timeSinceLastGameParam):
         print("The last game played was more than 2 hours ago")
         time.sleep(timeInterval)
         continue
 
     # check if both the matches were ranked and were started within 2 hours of each other
-    if(last_match['queue'] == 420 and second_last_match['queue'] == 420 and diffMins < 120):
+    if(last_match['queue'] == 420 and second_last_match['queue'] == 420 and diffMins < timeBetweenGamesParam):
         losses = 0
         matchData = []
         matchData2 = []
@@ -88,7 +105,7 @@ while(True):
 
 
     else:
-        print("The last two matches were not ranked")
+        print("The last two matches were not ranked or they were started 2 hours apart")
 
     # check matches every 5 seconds
     time.sleep(timeInterval)
